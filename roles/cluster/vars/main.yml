@@ -1,0 +1,12 @@
+---
+# vars file for cluster
+access: AKIAVQ4DFPLJ3DO46SH7
+secret: 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
+image: ami-0bcf5425cdc1d8a85
+sg: sg-007b77ccf46184ac6
+key: mykey
+region: ap-south-1
+subnet: subnet-a4131acc
+worker_count: 2
+type: t2.micro
+

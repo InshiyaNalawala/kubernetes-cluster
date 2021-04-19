@@ -1,0 +1,45 @@
+- name: Provisioning Kubernetes Cluster on AWS 
+  hosts: localhost 
+  roles: 
+  - role: "cluster"
+
+- name: Configure the Master
+  hosts: tag_kubernetes_master
+  roles:
+  - role: "k8s_master"
+
+- name: Configure the worker 
+  hosts: tag_kubernetes_worker
+  roles: 
+  - role: "k8s_worker"
+
+- name: The Final Setup
+  hosts: tag_cluster_kubernetes
+  tasks:
+   - name: Get the token
+     command:
+       cmd: "kubeadm token create  --print-join-command"
+     register: token
+     when: inventory_hostname in groups['tag_kubernetes_master']
+
+   - name: Allowing worker to join
+     shell:
+       cmd: "{{  hostvars[groups['tag_kubernetes_master'][0]]['token']['stdout']  }}"
+     when: inventory_hostname in groups['tag_kubernetes_worker']
+
+   - name: Wating for the Cluster to get Ready!
+     pause:
+       seconds: 25
+
+   - name: Checking connections
+     command:
+       cmd: "kubectl get nodes"
+     register: result
+     when: inventory_hostname in groups['tag_kubernetes_master']
+
+   - name: Hurray, Cluster is Ready!
+     debug:
+       msg: "{{ result.stdout_lines }}"
+     when: inventory_hostname in groups['tag_kubernetes_master']
+
+ 

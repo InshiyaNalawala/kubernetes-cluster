@@ -1,0 +1,46 @@
+---
+# tasks file for cluster
+- name: Install python
+  package:
+      name: python3
+      state: present
+
+- name: Install boto library
+  pip:
+      name: "{{ item }}"
+      state: present
+  loop:
+  - boto
+  - boto3
+  - botocore
+
+- name: Launching the master instance
+  ec2:
+      aws_access_key: "{{ access }}"
+      aws_secret_key: "{{ secret }}"
+      count: 1
+      image: "{{ image }}"
+      instance_tags: {"kubernetes":"master" , "cluster":"kubernetes"}
+      instance_type: "{{ type }}"
+      key_name: "{{ key}}"
+      region: "{{ region }}"
+      vpc_subnet_id: "{{ subnet }}"
+      group_id: "{{ sg }}"
+      assign_public_ip: yes
+      state: present
+
+
+- name: Launching worker instances
+  ec2:
+      aws_access_key: "{{ access }}"
+      aws_secret_key: "{{ secret }}"
+      count: "{{ worker_count }}"
+      image: "{{ image }}"
+      instance_tags: {"kubernetes":"worker" , "cluster":"kubernetes"}
+      instance_type: "{{ type }}"
+      key_name: "{{ key}}"
+      region: "{{ region }}"
+      vpc_subnet_id: "{{ subnet }}"
+      group_id: "{{ sg }}"
+      assign_public_ip: yes
+      state: present
